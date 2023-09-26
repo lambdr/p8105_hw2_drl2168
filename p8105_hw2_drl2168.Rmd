@@ -26,7 +26,24 @@ df_pol <- read_csv("data/pols-month.csv") |>
   select(-c(day, prez_dem, prez_gop))
 
 
-df_pol
 
+```
+
+```{r}
+df_snp <- read_csv("data/snp.csv") |> 
+  mutate(date = lubridate::mdy(date)) |> 
+  separate(date, into = c("year", "month", "day"), "-") |> 
+  mutate(
+    month = month.name[(as.numeric(month))],
+    year = as.numeric(year),
+    year = case_when(
+      year > 2020 ~ year - 100,
+      year < 2020 ~ year
+    )
+    ) |> 
+  select(-day) |> 
+  arrange(year)
+
+df_snp
 ```
 
