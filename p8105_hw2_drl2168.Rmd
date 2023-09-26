@@ -9,3 +9,24 @@ Load all relevant packages.
 library(tidyverse)
 ```
 
+# Problem 1
+I will ...
+```{r import data p1}
+# Load in the data set and separate the mon variable into year, month, day
+
+df_pol <- read_csv("data/pols-month.csv") |> 
+  separate(mon, into = c("year", "month", "day"), "-") |> 
+  mutate(
+    month = month.name[as.numeric(month)],
+    president = case_match(
+      prez_gop,
+      1 ~ "gop",
+      0 ~ "dem"
+    )) |> 
+  select(-c(day, prez_dem, prez_gop))
+
+
+df_pol
+
+```
+
