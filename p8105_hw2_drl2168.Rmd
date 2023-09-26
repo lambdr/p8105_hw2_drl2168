@@ -10,7 +10,7 @@ library(tidyverse)
 ```
 
 # Problem 1
-I will ...
+I loaded in the dataframe and separated out the mon variable as indicated. Because the prez_gop and prez_dem data were redundant, I based the new president variable on prez_gop, then used `select` to remove unneeded variables.
 ```{r import data p1}
 # Load in the data set and separate the mon variable into year, month, day
 
@@ -29,6 +29,7 @@ df_pol <- read_csv("data/pols-month.csv") |>
 
 ```
 
+I read in `snp.csv` and went through the same cleaning steps. The date was formatted differently, so I used `lubridate` to reformat it. However, this assigned the incorrect year to everything before 1969, so I used `case_when` to reassign the year.
 ```{r}
 df_snp <- read_csv("data/snp.csv") |> 
   mutate(date = lubridate::mdy(date)) |> 
