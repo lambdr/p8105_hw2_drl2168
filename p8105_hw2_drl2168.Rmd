@@ -11,13 +11,14 @@ library(tidyverse)
 
 # Problem 1
 I loaded in the dataframe and separated out the mon variable as indicated. Because the prez_gop and prez_dem data were redundant, I based the new president variable on prez_gop, then used `select` to remove unneeded variables.
-```{r import data p1}
+```{r import pols data}
 # Load in the data set and separate the mon variable into year, month, day
 
 df_pol <- read_csv("data/pols-month.csv") |> 
   separate(mon, into = c("year", "month", "day"), "-") |> 
   mutate(
     month = month.name[as.numeric(month)],
+    year = as.numeric(year),
     president = case_match(
       prez_gop,
       1 ~ "gop",
@@ -30,7 +31,7 @@ df_pol <- read_csv("data/pols-month.csv") |>
 ```
 
 I read in `snp.csv` and went through the same cleaning steps. The date was formatted differently, so I used `lubridate` to reformat it. However, this assigned the incorrect year to everything before 1969, so I used `case_when` to reassign the year.
-```{r}
+```{r import snp data}
 df_snp <- read_csv("data/snp.csv") |> 
   mutate(date = lubridate::mdy(date)) |> 
   separate(date, into = c("year", "month", "day"), "-") |> 
@@ -39,12 +40,36 @@ df_snp <- read_csv("data/snp.csv") |>
     year = as.numeric(year),
     year = case_when(
       year > 2020 ~ year - 100,
-      year < 2020 ~ year
-    )
+      year < 2020 ~ year)
     ) |> 
+  rename(snp_close = close) |> 
   select(-day) |> 
   arrange(year)
 
-df_snp
 ```
 
+In working with the unemployment data, I decided to convert the abbreviated months to full months by mapping from the built in vector `month.abb` to another built in vector `month.name`. I had used `month.name` above to go from month numbers to month names.
+```{r import unemployment data}
+df_unemp <- read_csv("data/unemployment.csv") |> 
+  pivot_longer(
+    Jan:Dec,
+    names_to = "month",
+    values_to = "unemployment"
+  ) |> 
+  mutate(month = month.name[match(month, month.abb)]) |> 
+  janitor::clean_names()
+```
+
+Now I will merge these three dataframes into one dataframe.
+
+```{r}
+# First, left_join political and s&p data
+df_combined <- left_join(df_pol, df_snp, by = join_by(year, month))
+
+# Next, add unemployment data
+df_combined <- left_join(df_combined, df_unemp, by = join_by(year, month))
+```
+
+The `df_combined` dataframe is contains `r nrow(df_combined)` rows of `r ncol(df_combined)` variables. The dataframe contains monthly records of U.S. political control at the state and federal level, particularly whether the `president` was a democrat or republican, the S&P 500 index (`snp_close`), and unemployment rate (`unemployment`). The political data ranges from 1947-2015, although the S&P 500 and unemployment data only go back to 1950 and 1948, respectively, so the first 36 rows of the dataframe contain missing data.
+
+# Problem 2
