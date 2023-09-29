@@ -5,7 +5,7 @@ date: "`r Sys.Date()`"
 output: github_document
 ---
 Load all relevant packages.
-```{r load packages}
+```{r load packages, message = FALSE}
 library(tidyverse)
 library(readxl)
 library(lubridate)
@@ -13,7 +13,7 @@ library(lubridate)
 
 # Problem 1
 I loaded in the dataframe and separated out the mon variable as indicated. Because the prez_gop and prez_dem data were redundant, I based the new president variable on prez_gop, then used `select` to remove unneeded variables.
-```{r import pols data}
+```{r import pols data, message = FALSE}
 # Load in the data set and separate the mon variable into year, month, day
 
 df_pol <- read_csv("data/pols-month.csv") |> 
@@ -27,15 +27,12 @@ df_pol <- read_csv("data/pols-month.csv") |>
       0 ~ "dem"
     )) |> 
   select(-c(day, prez_dem, prez_gop))
-
-
-
 ```
 
 I read in `snp.csv` and went through the same cleaning steps. The date was formatted differently, so I used `lubridate` to reformat it. I ended up using `lubridate` more later, so I added it to the code chunk to load packages. However, this assigned the incorrect year to everything before 1969, so I used `case_when` to reassign the year.
-```{r import snp data}
+```{r import snp data, message = FALSE}
 df_snp <- read_csv("data/snp.csv") |> 
-  mutate(date = lubridate::mdy(date)) |> 
+  mutate(date = mdy(date)) |> 
   separate(date, into = c("year", "month", "day"), "-") |> 
   mutate(
     month = month.name[(as.numeric(month))],
@@ -51,7 +48,7 @@ df_snp <- read_csv("data/snp.csv") |>
 ```
 
 In working with the unemployment data, I decided to convert the abbreviated months to full months by mapping from the built in vector `month.abb` to another built in vector `month.name`. I had used `month.name` above to go from month numbers to month names.
-```{r import unemployment data}
+```{r import unemployment data, message = FALSE}
 df_unemp <- read_csv("data/unemployment.csv") |> 
   pivot_longer(
     Jan:Dec,
@@ -76,7 +73,7 @@ The `df_combined` dataframe is contains `r nrow(df_combined)` rows of `r ncol(df
 
 # Problem 2
 I already loaded `readxl`, so I will now import the Mr. Trash Wheel data. The first row is an image, so I will skip that. There are two extra columns that get read in, and I remove both of them.
-```{r mr. trash wheel}
+```{r mr. trash wheel, message = FALSE}
 # Import and clean the Mr. Trash Wheel data
 df_mr_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |> 
   janitor::clean_names() |> 
@@ -129,7 +126,9 @@ df_tw <- bind_rows(df_mr_tw, df_prof_tw) |>
   select(year, month, wheel, everything()) |> 
   arrange(year)
 
-df_tw
-
 ```
 
+The `df_tw` dataframe contains `r nrow(df_tw)` observations of `r ncol(df_tw)` variables for `r length(unique(pull(df_tw, wheel)))` different trash wheels.
+
+sum of trash weight for prof
+sum of cig butts for gwyn in july 2021
