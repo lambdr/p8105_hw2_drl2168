@@ -8,6 +8,7 @@ Load all relevant packages.
 ```{r load packages}
 library(tidyverse)
 library(readxl)
+library(lubridate)
 ```
 
 # Problem 1
@@ -31,7 +32,7 @@ df_pol <- read_csv("data/pols-month.csv") |>
 
 ```
 
-I read in `snp.csv` and went through the same cleaning steps. The date was formatted differently, so I used `lubridate` to reformat it. However, this assigned the incorrect year to everything before 1969, so I used `case_when` to reassign the year.
+I read in `snp.csv` and went through the same cleaning steps. The date was formatted differently, so I used `lubridate` to reformat it. I ended up using `lubridate` more later, so I added it to the code chunk to load packages. However, this assigned the incorrect year to everything before 1969, so I used `case_when` to reassign the year.
 ```{r import snp data}
 df_snp <- read_csv("data/snp.csv") |> 
   mutate(date = lubridate::mdy(date)) |> 
@@ -83,7 +84,15 @@ df_mr_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "
   select(-x15, -x16) |> 
   filter(dumpster != "") |> 
   mutate(homes_powered = weight*500/30) |> 
-  mutate(wheel = "mr_trash_wheel")
+  mutate(wheel = "mr_trash_wheel",
+         year = as.numeric(year)) |> 
+
+# There is a typo in the 'date' variable of the data frame
+# I decided to correct it here
+
+  mutate(date = case_when(
+    date == ymd("1900-01-20") ~ ymd("2020-01-20"),
+    date != ymd("1900-01-20") ~ date))
 ```
 
 I then read in the Professor and Gwynnda Trash Wheel data, noting that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`. While Mr. and Professor Trash Wheels containt the variable `grocery_bags`, Gwynnda contains the variable `plastic_bag`. I renamed this for consistencies of variable names.
@@ -109,3 +118,18 @@ df_gwyn_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet =
 ```
 
 I then read in  that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`. 
+
+Now I will join the dataframes together.
+
+```{r join dataframes}
+
+df_tw <- bind_rows(df_mr_tw, df_prof_tw) |> 
+  bind_rows(df_gwyn_tw) |> 
+  select(-dumpster) |> 
+  select(year, month, wheel, everything()) |> 
+  arrange(year)
+
+df_tw
+
+```
+
