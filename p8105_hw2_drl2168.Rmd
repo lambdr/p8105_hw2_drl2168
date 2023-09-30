@@ -4,7 +4,9 @@ author: "Derek Lamb"
 date: "`r Sys.Date()`"
 output: github_document
 ---
+
 Load all relevant packages.
+
 ```{r load packages, message = FALSE}
 library(tidyverse)
 library(readxl)
@@ -12,7 +14,10 @@ library(lubridate)
 ```
 
 # Problem 1
+
+### Politics data
 I loaded in the dataframe and separated out the mon variable as indicated. Because the prez_gop and prez_dem data were redundant, I based the new president variable on prez_gop, then used `select` to remove unneeded variables.
+
 ```{r import pols data, message = FALSE}
 # Load in the data set and separate the mon variable into year, month, day
 
@@ -29,7 +34,9 @@ df_pol <- read_csv("data/pols-month.csv") |>
   select(-c(day, prez_dem, prez_gop))
 ```
 
+### S&P 500 data
 I read in `snp.csv` and went through the same cleaning steps. The date was formatted differently, so I used `lubridate` to reformat it. I ended up using `lubridate` more later, so I added it to the code chunk to load packages. However, this assigned the incorrect year to everything before 1969, so I used `case_when` to reassign the year.
+
 ```{r import snp data, message = FALSE}
 df_snp <- read_csv("data/snp.csv") |> 
   mutate(date = mdy(date)) |> 
@@ -47,7 +54,9 @@ df_snp <- read_csv("data/snp.csv") |>
 
 ```
 
+### Unemployment data
 In working with the unemployment data, I decided to convert the abbreviated months to full months by mapping from the built in vector `month.abb` to another built in vector `month.name`. I had used `month.name` above to go from month numbers to month names.
+
 ```{r import unemployment data, message = FALSE}
 df_unemp <- read_csv("data/unemployment.csv") |> 
   pivot_longer(
@@ -59,6 +68,7 @@ df_unemp <- read_csv("data/unemployment.csv") |>
   janitor::clean_names()
 ```
 
+### Combining dataframes
 Now I will merge these three dataframes into one dataframe.
 
 ```{r join pols data}
@@ -72,7 +82,10 @@ df_combined <- left_join(df_combined, df_unemp, by = join_by(year, month))
 The `df_combined` dataframe is contains `r nrow(df_combined)` rows of `r ncol(df_combined)` variables. The dataframe contains monthly records of U.S. political control at the state and federal level, particularly whether the `president` was a democrat or republican, the S&P 500 index (`snp_close`), and unemployment rate (`unemployment`). The political data ranges from 1947-2015, although the S&P 500 and unemployment data only go back to 1950 and 1948, respectively, so the first 36 rows of the dataframe contain missing data.
 
 # Problem 2
+
+### Mr. Trash Wheel
 I already loaded `readxl`, so I will now import the Mr. Trash Wheel data. The first row is an image, so I will skip that. There are two extra columns that get read in, and I remove both of them.
+
 ```{r mr. trash wheel, message = FALSE}
 # Import and clean the Mr. Trash Wheel data
 df_mr_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |> 
@@ -92,6 +105,7 @@ df_mr_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "
     date != ymd("1900-01-20") ~ date))
 ```
 
+### Professor Trash Wheel & Gwnnda the Trash Wheel
 I then read in the Professor and Gwynnda Trash Wheel data, noting that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`. While Mr. and Professor Trash Wheels containt the variable `grocery_bags`, Gwynnda contains the variable `plastic_bag`. I renamed this for consistencies of variable names.
 
 ```{r other trash wheels}
@@ -114,8 +128,9 @@ df_gwyn_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet =
   mutate(wheel = "gwynnda_trash_wheel")
 ```
 
-I then read in  that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`. 
+I then read in that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`.
 
+### Combining Trash Wheel data
 Now I will join the dataframes together.
 
 ```{r join dataframes}
@@ -128,10 +143,11 @@ df_tw <- bind_rows(df_mr_tw, df_prof_tw) |>
 
 ```
 
-The `df_tw` dataframe contains `r nrow(df_tw)` observations of `r ncol(df_tw)` variables for `r length(unique(pull(df_tw, wheel)))` different trash wheels. On each `date`, the `weight` in tons and `volume` in cubic yards of trash collected was recorded, as well as the counts of certain common trash items, such as `cigarette_butts` or `plastic_bottles`. This dataframe can be used to answer questions about the performance of the different trash wheels. For example, Professor Trash Wheel has collected a total of `r with(df_tw, sum(weight[wheel == "prof_trash_wheel"]))` tons of trash. Gwynnda the Trash Wheel, which started operating in `r with(df_tw, min(year[wheel == "gwynnda_trash_wheel"]))`, collected `r format(with(df_tw, sum(cigarette_butts[wheel =="gwynnda_trash_wheel" & year == 2021 & month == "July"])), scientific = FALSE)` in July of that year.
+The `df_tw` dataframe contains `r nrow(df_tw)` observations of `r ncol(df_tw)` variables for `r length(unique(pull(df_tw, wheel)))` different trash wheels. On each `date`, the `weight` in tons and `volume` in cubic yards of trash collected was recorded, as well as the counts of certain common trash items, such as `cigarette_butts` or `plastic_bottles`. This dataframe can be used to answer questions about the performance of the different trash wheels. For example, Professor Trash Wheel has collected a total of `r with(df_tw, sum(weight[wheel == "prof_trash_wheel"]))` tons of trash. Gwynnda the Trash Wheel, which started operating in `r with(df_tw, min(year[wheel == "gwynnda_trash_wheel"]))`, collected `r format(with(df_tw, sum(cigarette_butts[wheel =="gwynnda_trash_wheel" & year == 2021 & month == "July"])), scientific = FALSE)` cigarette butts in July of that year.
 
 # Problem 3
 
+### Baseline data
 
 ```{r import ad bl data, message = FALSE}
 
@@ -146,14 +162,58 @@ df_ad_bl <- read_csv("data/MCI_baseline.csv",
     apoe4 = case_match(apoe4, 
       0 ~ "non_carrier",
       1 ~ "carrier")
-  )
-
+  ) |> 
+  filter(age_at_onset > current_age | is.na(age_at_onset))
 ```
 
-The first row was variable descriptions, so I skipped it in the import. I additionally recoded the missing values from `.` to `NA`. I reassigned `sex` and `apoe4` carrier status to a descriptive character value rather than 0 or 1.
+The first row was variable descriptions, so I skipped it in the import. I additionally recoded the missing values from `.` to `NA`. I reassigned `sex` and `apoe4` carrier status to a descriptive character value rather than 0 or 1. Additionally, I removed any rows where the age at mild cognitive impairment (MCI) onset preceded their baseline data being recorded. There were `r ncol(df_ad_bl)` variables recorded in this dataframe, id, demographic info, APOE4 carrier status, and age at MCI onset. In this study, `r nrow(df_ad_bl)` eligable subjects were recruited, of which `r with(df_ad_bl, length(age_at_onset[!is.na(age_at_onset)]))` developed MCI during the course of the study. The average baseline age of participants was `r round(mean(pull(df_ad_bl, current_age)), digits = 0)` years old and `r scales::percent(with(df_ad_bl, length(apoe4[apoe4 == "carrier" & sex == "female"]))/with(df_ad_bl, length(apoe4[sex == "female"])))` of the women in the study were carriers of the APOE4 gene.
+
+How many participants were recruited, and of these how many develop MCI? What is the average baseline age? What proportion of women in the study are APOE4 carriers?
+
+### Amyloid $\beta$ 42/40 data
+
+```{r import amyloid, message = FALSE}
+df_amyloid <- read_csv("data/mci_amyloid.csv", 
+                       skip = 1, 
+                       na = c("Na", "NA")) |> 
+  janitor::clean_names() |> 
+  rename(id = study_id) |> 
+  pivot_longer(baseline:time_8, 
+               names_to = "time",
+               values_to = "amyloid_ratio",
+               names_prefix = "time_") |> 
+  mutate(time = replace(time, time == "baseline", "0"),
+         time = as.numeric(time),
+         amyloid_ratio = as.numeric(amyloid_ratio))
+```
+
+I imported the data from `mci_amyloid.csv`. Missing values were coded as either `NA` or `Na`; I corrected that in the `read_csv` function. I then converted the data from a wide format to a long format, with the variable `time` indicating when the measurement was taken and the variable `amyloid_ratio` indicating the amyloid $\beta$ 42/40 ratio at that given time.
 
 
+### Combining baseline and amyloid data
+To check whether there are differences in the subject id's between the two dataframes, I will count the number of IDs in `df_ad_bl`, the number of unique IDs in `df_amyloid` - unique because there are repeats over the `time` variable, and the number of items in the intersection of the dataframes. If these numbers are not all equal, then there are different subjects in the two dataframes.
 
-How many participants were recruited, and of these how many develop MCI? 
-What is the average baseline age? 
-What proportion of women in the study are APOE4 carriers?
+```{r check overlap}
+# Baseline data
+df_ad_bl |> 
+  pull(id) |> 
+  length()
+
+# Amyloid beta data
+df_amyloid |> 
+  pull(id) |> 
+  unique() |> 
+  length()
+
+# Overlap
+length(intersect(pull(df_ad_bl, id), pull(df_amyloid, id)))
+```
+
+These results show that there are 471 common subjects between the dataframes, but 8 unique to `df_ad_bl` and 16 unique to `df_amyloid`. I will combine the dataframes, but only include the 471 subjects who appear in both dataframes.
+
+```{r combine ad, message = FALSE}
+df_ad <- inner_join(df_ad_bl, df_amyloid, by = join_by(id))
+```
+
+The final `df_ad` dataframe contains `r nrow(df_ad)` observations of `r ncol(df_ad)` variables, 5 observations for each of the `r length(unique(pull(df_ad, id)))` subjects.
+
