@@ -28,9 +28,12 @@ df_pol <- read_csv("data/pols-month.csv") |>
     year = as.numeric(year),
     president = case_match(
       prez_gop,
+      2 ~ "gop",
       1 ~ "gop",
       0 ~ "dem"
     )) |> 
+# Note the 2-coded prez_gop  
+
   select(-c(day, prez_dem, prez_gop))
 ```
 
@@ -84,7 +87,7 @@ The `df_combined` dataframe is contains `r nrow(df_combined)` rows of `r ncol(df
 # Problem 2
 
 ### Mr. Trash Wheel
-I already loaded `readxl`, so I will now import the Mr. Trash Wheel data. The first row is an image, so I will skip that. There are two extra columns that get read in, and I remove both of them.
+I already loaded `readxl`, so I will now import the Mr. Trash Wheel data. The first row is an image, so I will skip that. There are two extra columns that get read in, I think because of Excel's formatting, so I removed both of them. I made two additional changes to the data. The `year` variable was a  character variable, and so I converted it to a numeric variable. I also fixed a typo that was in the date variable.
 
 ```{r mr. trash wheel, message = FALSE}
 # Import and clean the Mr. Trash Wheel data
@@ -106,7 +109,7 @@ df_mr_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "
 ```
 
 ### Professor Trash Wheel & Gwnnda the Trash Wheel
-I then read in the Professor and Gwynnda Trash Wheel data, noting that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`. While Mr. and Professor Trash Wheels containt the variable `grocery_bags`, Gwynnda contains the variable `plastic_bag`. I renamed this for consistencies of variable names.
+I then read in the Professor and Gwynnda Trash Wheel data, noting that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`. While Mr. and Professor Trash Wheels contain the variable `grocery_bags`, Gwynnda contains the variable `plastic_bag`. I renamed this for consistency of variable names.
 
 ```{r other trash wheels}
 # Import and clean Prof. Trash Wheel data
@@ -131,7 +134,7 @@ df_gwyn_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet =
 I then read in that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`.
 
 ### Combining Trash Wheel data
-Now I will join the dataframes together.
+I will join the dataframes together using `bind_rows`.
 
 ```{r join dataframes}
 
@@ -168,7 +171,6 @@ df_ad_bl <- read_csv("data/MCI_baseline.csv",
 
 The first row was variable descriptions, so I skipped it in the import. I additionally recoded the missing values from `.` to `NA`. I reassigned `sex` and `apoe4` carrier status to a descriptive character value rather than 0 or 1. Additionally, I removed any rows where the age at mild cognitive impairment (MCI) onset preceded their baseline data being recorded. There were `r ncol(df_ad_bl)` variables recorded in this dataframe, id, demographic info, APOE4 carrier status, and age at MCI onset. In this study, `r nrow(df_ad_bl)` eligible subjects were recruited, of which `r with(df_ad_bl, length(age_at_onset[!is.na(age_at_onset)]))` developed MCI during the course of the study. The average baseline age of participants was `r round(mean(pull(df_ad_bl, current_age)), digits = 0)` years old and `r scales::percent(with(df_ad_bl, length(apoe4[apoe4 == "carrier" & sex == "female"]))/with(df_ad_bl, length(apoe4[sex == "female"])))` of the women in the study were carriers of the APOE4 gene.
 
-How many participants were recruited, and of these how many develop MCI? What is the average baseline age? What proportion of women in the study are APOE4 carriers?
 
 ### Amyloid $\beta$ 42/40 data
 
@@ -188,7 +190,6 @@ df_amyloid <- read_csv("data/mci_amyloid.csv",
 ```
 
 I imported the data from `mci_amyloid.csv`. Missing values were coded as either `NA` or `Na`; I corrected that in the `read_csv` function. I then converted the data from a wide format to a long format, with the variable `time` indicating when the measurement was taken and the variable `amyloid_ratio` indicating the amyloid $\beta$ 42/40 ratio at that given time.
-
 
 ### Combining baseline and amyloid data
 To check whether there are differences in the subject id's between the two dataframes, I will count the number of IDs in `df_ad_bl`, the number of unique IDs in `df_amyloid` - unique because there are repeats over the `time` variable, and the number of items in the intersection of the dataframes. If these numbers are not all equal, then there are different subjects in the two dataframes.
