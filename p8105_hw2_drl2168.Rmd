@@ -146,7 +146,7 @@ df_tw <- bind_rows(df_mr_tw, df_prof_tw) |>
 
 ```
 
-The `df_tw` dataframe contains `r nrow(df_tw)` observations of `r ncol(df_tw)` variables for `r length(unique(pull(df_tw, wheel)))` different trash wheels. On each `date`, the `weight` in tons and `volume` in cubic yards of trash collected was recorded, as well as the counts of certain common trash items, such as `cigarette_butts` or `plastic_bottles`. This dataframe can be used to answer questions about the performance of the different trash wheels. For example, Professor Trash Wheel has collected a total of `r with(df_tw, sum(weight[wheel == "prof_trash_wheel"]))` tons of trash. Gwynnda the Trash Wheel, which started operating in `r with(df_tw, min(year[wheel == "gwynnda_trash_wheel"]))`, collected `r format(with(df_tw, sum(cigarette_butts[wheel =="gwynnda_trash_wheel" & year == 2021 & month == "July"])), scientific = FALSE)` cigarette butts in July of that year.
+The `df_tw` dataframe contains `r nrow(df_tw)` observations of `r ncol(df_tw)` variables for `r df_tw |> pull(wheel) |> unique() |> length()` different trash wheels. On each `date`, the `weight` in tons and `volume` in cubic yards of trash collected was recorded, as well as the counts of certain common trash items, such as `cigarette_butts` or `plastic_bottles`. This dataframe can be used to answer questions about the performance of the different trash wheels. For example, Professor Trash Wheel has collected a total of `r with(df_tw, sum(weight[wheel == "prof_trash_wheel"]))` tons of trash. Gwynnda the Trash Wheel, which started operating in `r with(df_tw, min(year[wheel == "gwynnda_trash_wheel"]))`, collected `r format(with(df_tw, sum(cigarette_butts[wheel =="gwynnda_trash_wheel" & year == 2021 & month == "July"])), scientific = FALSE)` cigarette butts in July of that year.
 
 # Problem 3
 
@@ -169,7 +169,7 @@ df_ad_bl <- read_csv("data/MCI_baseline.csv",
   filter(age_at_onset > current_age | is.na(age_at_onset))
 ```
 
-The first row was variable descriptions, so I skipped it in the import. I additionally recoded the missing values from `.` to `NA`. I reassigned `sex` and `apoe4` carrier status to a descriptive character value rather than 0 or 1. Additionally, I removed any rows where the age at mild cognitive impairment (MCI) onset preceded their baseline data being recorded. There were `r ncol(df_ad_bl)` variables recorded in this dataframe, id, demographic info, APOE4 carrier status, and age at MCI onset. In this study, `r nrow(df_ad_bl)` eligible subjects were recruited, of which `r with(df_ad_bl, length(age_at_onset[!is.na(age_at_onset)]))` developed MCI during the course of the study. The average baseline age of participants was `r round(mean(pull(df_ad_bl, current_age)), digits = 0)` years old and `r scales::percent(with(df_ad_bl, length(apoe4[apoe4 == "carrier" & sex == "female"]))/with(df_ad_bl, length(apoe4[sex == "female"])))` of the women in the study were carriers of the APOE4 gene.
+The first row was variable descriptions, so I skipped it in the import. I additionally recoded the missing values from `.` to `NA`. I reassigned `sex` and `apoe4` carrier status to a descriptive character value rather than 0 or 1. Additionally, I removed any rows where the age at mild cognitive impairment (MCI) onset preceded their baseline data being recorded. There were `r ncol(df_ad_bl)` variables recorded in this dataframe, id, demographic info, APOE4 carrier status, and age at MCI onset. In this study, `r nrow(df_ad_bl)` eligible subjects were recruited, of which `r with(df_ad_bl, length(age_at_onset[!is.na(age_at_onset)]))` developed MCI during the course of the study. The average baseline age of participants was `r df_ad_bl |> pull(current_age) |> mean() |> round(digits = 0)` years old and `r scales::percent(with(df_ad_bl, length(apoe4[apoe4 == "carrier" & sex == "female"]))/with(df_ad_bl, length(apoe4[sex == "female"])))` of the women in the study were carriers of the APOE4 gene.
 
 
 ### Amyloid $\beta$ 42/40 data
@@ -207,7 +207,10 @@ df_amyloid |>
   length()
 
 # Overlap
-length(intersect(pull(df_ad_bl, id), pull(df_amyloid, id)))
+df_ad_bl |> 
+  pull(id) |> 
+  intersect(x =_, pull(df_amyloid,id)) |> 
+  length()
 ```
 
 These results show that there are 471 common subjects between the dataframes, but 8 unique to `df_ad_bl` and 16 unique to `df_amyloid`. I will combine the dataframes, but only include the 471 subjects who appear in both dataframes.
@@ -216,7 +219,7 @@ These results show that there are 471 common subjects between the dataframes, bu
 df_ad <- inner_join(df_ad_bl, df_amyloid, by = join_by(id))
 ```
 
-The final `df_ad` dataframe contains `r nrow(df_ad)` observations of `r ncol(df_ad)` variables, 5 observations for each of the `r length(unique(pull(df_ad, id)))` subjects. It contains both their demographic information and their amyloid $\beta$ 42/40 ratios over the course of this longitudinal study. I will take the clean data set and export it as `mci_study_clean.csv` and save it in the results folder. 
+The final `df_ad` dataframe contains `r nrow(df_ad)` observations of `r ncol(df_ad)` variables, 5 observations for each of the `r df_ad |> pull(id) |> unique() |> length()` subjects. It contains both their demographic information and their amyloid $\beta$ 42/40 ratios over the course of this longitudinal study. I will take the clean data set and export it as `mci_study_clean.csv` and save it in the results folder. 
 
 ```{r export clean data}
 write_csv(df_ad, "results/mci_study_clean.csv")
