@@ -192,7 +192,7 @@ df_amyloid <- read_csv("data/mci_amyloid.csv",
          amyloid_ratio = as.numeric(amyloid_ratio))
 ```
 
-I imported the data from `mci_amyloid.csv`. Missing values were coded as either `NA` or `Na`; I corrected that in the `read_csv` function. I then converted the data from a wide format to a long format, with the variable `time` indicating when the measurement was taken and the variable `amyloid_ratio` indicating the amyloid $\beta$ 42/40 ratio at that given time.
+I imported the data from `mci_amyloid.csv`. Missing values were coded as either `NA` or `Na`; I corrected that in the `read_csv` function. I then converted the data from a wide format to a long format, with the variable `time` indicating when the measurement was taken and the variable `amyloid_ratio` indicating the amyloid $\beta$ 42/40 ratio at that given time. The final dataframe consists of `r nrow(df_amyloid)` rows for these three variables: `amyloid_ratio`, `time`, and `id`.
 
 ### Combining baseline and amyloid data
 
