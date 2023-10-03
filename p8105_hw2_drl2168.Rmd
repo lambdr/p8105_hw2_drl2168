@@ -91,7 +91,7 @@ I already loaded `readxl`, so I will now import the Mr. Trash Wheel data. The fi
 
 ```{r mr. trash wheel, message = FALSE}
 # Import and clean the Mr. Trash Wheel data
-df_mr_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |> 
+df_mr_tw <- read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Mr. Trash Wheel", skip = 1) |> 
   janitor::clean_names() |> 
   rename(weight = weight_tons, volume = volume_cubic_yards) |> 
   select(-x15, -x16) |> 
@@ -109,11 +109,11 @@ df_mr_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "
 ```
 
 ### Professor Trash Wheel & Gwnnda the Trash Wheel
-I then read in the Professor and Gwynnda Trash Wheel data, noting that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`. While Mr. and Professor Trash Wheels contain the variable `grocery_bags`, Gwynnda contains the variable `plastic_bag`. I renamed this for consistency of variable names.
+I then read in the Professor and Gwynnda Trash Wheel data, noting that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`.
 
 ```{r other trash wheels}
 # Import and clean Prof. Trash Wheel data
-df_prof_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", skip = 1) |> 
+df_prof_tw <- read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Professor Trash Wheel", skip = 1) |> 
   janitor::clean_names() |> 
   rename(weight = weight_tons, volume = volume_cubic_yards) |> 
   filter(dumpster != "") |> 
@@ -121,17 +121,15 @@ df_prof_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet =
   mutate(wheel = "prof_trash_wheel")
 
 # Import and clean Gwynnda Trash Wheel data
-df_gwyn_tw <- read_excel("data/202207 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", skip = 1) |> 
+df_gwyn_tw <- read_excel("data/202309 Trash Wheel Collection Data.xlsx", sheet = "Gwynnda Trash Wheel", skip = 1) |> 
   janitor::clean_names() |> 
   rename(weight = weight_tons, 
-         volume = volume_cubic_yards,
-         grocery_bags = plastic_bags) |> 
+         volume = volume_cubic_yards) |> 
   filter(dumpster != "") |> 
   mutate(homes_powered = weight*500/30) |> 
   mutate(wheel = "gwynnda_trash_wheel")
 ```
 
-I then read in that `df_prof_tw` does not have the variable `sports_balls` and that `df_gwyn_tw` does not have the variables `glass_bottles`, `chip_bags`, or `sports_balls`.
 
 ### Combining Trash Wheel data
 I will join the dataframes together using `bind_rows`.
